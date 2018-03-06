@@ -6,17 +6,40 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Archives: 2017 | 岳小木的博客</title>
+  <title>岳小木的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="致力于寻找自己的兴趣所在">
-<meta property="og:type" content="website">
+  <meta name="description" content="Reveal 工具的使用参考目录https://hurui.gitbooks.io/reveal-debug/content/viewOtherApp.html
+1. 安装SSH； Cydia里面下载安装openSSH
+2.连接手机通过
+ssh root@[手机ip] 连接 连接成功修改默认密码
+3.安装Cydia Substrate
+4.手机上安装Reveal
+5.使用xcode编写一份libR">
+<meta property="og:type" content="article">
 <meta property="og:title" content="岳小木的博客">
-<meta property="og:url" content="http://yoursite.com/archives/2017/index.html">
+<meta property="og:url" content="http://yoursite.com/2018/03/07/Reveal工具的使用/index.html">
 <meta property="og:site_name" content="岳小木的博客">
-<meta property="og:description" content="致力于寻找自己的兴趣所在">
+<meta property="og:description" content="Reveal 工具的使用参考目录https://hurui.gitbooks.io/reveal-debug/content/viewOtherApp.html
+1. 安装SSH； Cydia里面下载安装openSSH
+2.连接手机通过
+ssh root@[手机ip] 连接 连接成功修改默认密码
+3.安装Cydia Substrate
+4.手机上安装Reveal
+5.使用xcode编写一份libR">
+<meta property="og:image" content="http://yoursite.com/2018/03/07/Reveal工具的使用/resources/2833266D6883450C2A74E299328E4639.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/03/07/Reveal工具的使用/resources/F0DB779349E8FEE26903F0C9259DB35A.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/03/07/Reveal工具的使用/resources/3110033076D55E6F94C41D9B741BD564.jpg">
+<meta property="og:updated_time" content="2018-03-06T16:53:28.698Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="岳小木的博客">
-<meta name="twitter:description" content="致力于寻找自己的兴趣所在">
+<meta name="twitter:description" content="Reveal 工具的使用参考目录https://hurui.gitbooks.io/reveal-debug/content/viewOtherApp.html
+1. 安装SSH； Cydia里面下载安装openSSH
+2.连接手机通过
+ssh root@[手机ip] 连接 连接成功修改默认密码
+3.安装Cydia Substrate
+4.手机上安装Reveal
+5.使用xcode编写一份libR">
+<meta name="twitter:image" content="http://yoursite.com/2018/03/07/Reveal工具的使用/resources/2833266D6883450C2A74E299328E4639.jpg">
   
     <link rel="alternative" href="/atom.xml" title="岳小木的博客" type="application/atom+xml">
   
@@ -138,64 +161,110 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-Reveal工具的使用" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Reveal-工具的使用"><a href="#Reveal-工具的使用" class="headerlink" title="Reveal 工具的使用"></a>Reveal 工具的使用</h1><h1 id="参考目录"><a href="#参考目录" class="headerlink" title="参考目录"></a>参考目录</h1><p><a href="https://hurui.gitbooks.io/reveal-debug/content/viewOtherApp.html" target="_blank" rel="external">https://hurui.gitbooks.io/reveal-debug/content/viewOtherApp.html</a></p>
+<p>1. 安装SSH； Cydia里面下载安装openSSH</p>
+<p>2.连接手机通过</p>
+<p>ssh root@[手机ip] 连接 连接成功修改默认密码</p>
+<p>3.安装Cydia Substrate</p>
+<p>4.手机上安装Revea<strong>l</strong></p>
+<p><strong>5.使用xcode</strong>编写一份libReveal.plist</p>
+<p>如图</p>
+<p><img src="/2018/03/07/Reveal工具的使用/resources/2833266D6883450C2A74E299328E4639.jpg" alt=""></p>
+<p>获取手机上应用的bundleId的方法可以通过私有API获取</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="built_in">NSMutableArray</span> *arrayM = [<span class="built_in">NSMutableArray</span> array];</div><div class="line"></div><div class="line"><span class="built_in">NSBundle</span> *b = [<span class="built_in">NSBundle</span> bundleWithPath:<span class="string">@"/System/Library/Frameworks/MobileCoreServices.framework"</span>];</div><div class="line"></div><div class="line"><span class="comment">//        BOOL success = [b load];</span></div><div class="line"></div><div class="line">Class LSApplicationWorkspace = <span class="built_in">NSClassFromString</span>(<span class="string">@"LSApplicationWorkspace"</span>);</div><div class="line"></div><div class="line"><span class="keyword">id</span> si = [LSApplicationWorkspace valueForKey:<span class="string">@"defaultWorkspace"</span>];</div><div class="line"></div><div class="line"><span class="built_in">NSArray</span> *appsInfoArr =  [si valueForKey:<span class="string">@"allInstalledApplications"</span>];</div><div class="line"></div><div class="line">[appsInfoArr enumerateObjectsUsingBlock:^(<span class="keyword">id</span> obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> *stop)</div><div class="line"></div><div class="line">&#123;</div><div class="line"></div><div class="line"><span class="comment">//        long time = [obj performSelector:@selector(isInstalled)];</span></div><div class="line"></div><div class="line"><span class="comment">//        [arrayM addObject:@(time)];</span></div><div class="line"></div><div class="line">[arrayM addObject:[obj performSelector:<span class="keyword">@selector</span>(applicationIdentifier)]];</div><div class="line"></div><div class="line">&#125;];</div><div class="line"></div><div class="line"><span class="built_in">NSLog</span>(<span class="string">@"%@"</span>,arrayM);</div></pre></td></tr></table></figure>
+<p>手机的bundleId部分如下</p>
+<p>com.baidu.tieba,</p>
+<p>com.qunar.iphoneclient8,</p>
+<p>com.alipay.iphoneclient,</p>
+<p>com.apple.TencentWeiboAccountMigrationDialog,</p>
+<p>com.apple.webapp,</p>
+<p>com.apple.AccountAuthenticationDialog,</p>
+<p>com.apple.podcasts,</p>
+<p>com.apple.SafariViewService,</p>
+<p>com.apple.MobileAddressBook,</p>
+<p>com.apple.Music,</p>
+<p>com.apple.AdSheetPhone,</p>
+<p>com.apple.mobileslideshow,</p>
+<p>com.apple.iCloudDriveApp,</p>
+<p>找到需要监控的墨迹天气，和重庆万年历添加至plist</p>
+<p>tips:找不到bundleId时可以使用助手下载ipa包，解压后在plist里面查找</p>
+<p>6.将plist上传至/Library/MobileSubstrate/DynamicLibraries</p>
+<p>使用scp指令： scp libReveal.plist <a href="&#109;&#97;&#x69;&#108;&#116;&#111;&#x3a;&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#57;&#50;&#46;&#49;&#56;&#54;&#x2e;&#51;&#46;&#55;&#x32;">&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#57;&#50;&#46;&#49;&#56;&#54;&#x2e;&#51;&#46;&#55;&#x32;</a>:/Library/MobileSubstrate/DynamicLibraries</p>
+<p>7.将/RevealServer.framework/RevealServer二进制文件 添加至 /Library/MobileSubstrate/DynamicLibraries 并重命名为为libReveal.dylib 指令如下</p>
+<p>scp /Users/xiaomu/Downloads/Reveal.app/Contents/SharedSupport/iOS-Libraries/RevealServer.framework/RevealServer root@192.168.3.72:/Library/MobileSubstrate/DynamicLibraries/libReveal.dylib</p>
+<p>/Library/MobileSubstrate/DynamicLibraries目录结构如下</p>
+<p><img src="/2018/03/07/Reveal工具的使用/resources/F0DB779349E8FEE26903F0C9259DB35A.jpg" alt=""></p>
+<p>8.大功告成，运行app 使用Reveal监控</p>
+<p><img src="/2018/03/07/Reveal工具的使用/resources/3110033076D55E6F94C41D9B741BD564.jpg" alt=""></p>
+<p>清晰的看见墨迹天气UI结构</p>
+<p>9.遇到点小问题</p>
+<p>-> 执行scp 指令时输入密码后显示权限不够。折腾了半天没有结果。后来就又好了。。。估计是锁屏时连接有问题（猜测，因为连接成功没锁屏）？</p>
+<p>-> 连接万年历，拖动到下面的信息流。reveal解析失败。 估计原因结构太复杂view层级太多导致软件扛不住。 首页结构清晰</p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2017" class="archive-year">2017</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/03/02/markDown/" class="archive-article-date">
-  	<time datetime="2017-03-01T16:16:54.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-03-02</time>
-</a>
-        </div>
-    	 
-        <div class="article-info info-on-right">
-          
-          
+      
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2017/03/01/hello-world/" class="archive-article-date">
-  	<time datetime="2017-03-01T13:22:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-03-01</time>
-</a>
-        </div>
-    	 
-        <div class="article-info info-on-right">
-          
-          
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2017/03/02/markDown/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+
+
+
+
+  
+    <div class="duoshuo"></div>
   
 
-    
+
 
 
           </div>
@@ -218,8 +287,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
