@@ -140,6 +140,80 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-iOS-TableViewCell内嵌UIWebView" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="iOS-TableViewCell内嵌UIWebView"><a href="#iOS-TableViewCell内嵌UIWebView" class="headerlink" title="iOS-TableViewCell内嵌UIWebView"></a>iOS-TableViewCell内嵌UIWebView</h1><h3 id="很多app的资讯详情界面都采用了上面是webview-下面是native的推荐阅读和评论区。各家app的实现方案也是五花八门。大概说一下我猜想的几种方案，和我最后采用的方案。"><a href="#很多app的资讯详情界面都采用了上面是webview-下面是native的推荐阅读和评论区。各家app的实现方案也是五花八门。大概说一下我猜想的几种方案，和我最后采用的方案。" class="headerlink" title="很多app的资讯详情界面都采用了上面是webview,下面是native的推荐阅读和评论区。各家app的实现方案也是五花八门。大概说一下我猜想的几种方案，和我最后采用的方案。"></a>很多app的资讯详情界面都采用了上面是webview,下面是native的推荐阅读和评论区。各家app的实现方案也是五花八门。大概说一下我猜想的几种方案，和我最后采用的方案。</h3><h2 id="方案"><a href="#方案" class="headerlink" title="方案"></a>方案</h2><ol>
+<li><p>将webView嵌入tableView header中展开，只滑动tableView,webView不滑动</p>
+</li>
+<li><p>将webView嵌入tableView header中，滑动tableview，通过设置contentOffset来滑动webView</p>
+</li>
+<li><p>将webView嵌入tablview Header中，同时通过手势滑动tableview和webview </p>
+</li>
+</ol>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><h3 id="方案1"><a href="#方案1" class="headerlink" title="方案1"></a>方案1</h3><p>此方案是最容易想到的实现方式，计算通过计算webview内容高度，来拉伸header和webview,让其与内容等高;<br>设置:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">webview.scrollView.scrollEnable = <span class="literal">NO</span>;</div></pre></td></tr></table></figure>
+<p>禁用webview滑动，通过滑动table来浏览header内webview的页面内容，这个方案解决了嵌套问题，使用起来丝般顺滑。以前我使用的也是这种方案，遇坑无数。展开webview图片全部加载会导致内存增大，严重时会crash掉。还有一个高度计算问题，因为我们内容源大多是第三方的，所以计算高度时遇到很多麻烦，通过js取到 <code>document.body.scrollHeight</code>  有时会偏低，导致页面加载不全。后来为了解决这个问题，使用用<strong>KVO</strong>监听<code>webView.ContentSize让webview</code>与其内容等高。页面加载不全的问题解决了，但新的问题又出现，未加载全那部分的图片无法加载,我怀疑是虽然未加载部分内容展示在屏幕上了，但并未触发页面 懒加载。所以图片无法展示，这个问题完全展开内容高度后可以通过<code>[webView reload]</code>解决掉，但浪费资源，影响体验。还有两个影响用户体验的问题，一是页面有展开全部功能，另一个页面有分页无限加载功能。</p>
+<p>这个方案适用于内容可控，高度计算稳定的页面。看过一位同学精仿网易新闻的demo <a href="https://github.com/dsxNiubility/SXNews" target="_blank" rel="external">GitHub连接</a> 采用的就是这种方案</p>
+<p><img src="/2018/03/07/iOS-TableViewCell内嵌UIWebView/35144639E44DF0C9D1436A4ABB38B7CE.png" alt="WX20180307-110908@2x.png"><br>view层级可以看到tableView的header很高，webView的内容被完全展开了，通过网易新闻api可以看出，页面所有内容资源全部返回给客户端，客户端按照统一的模板来组装成富文本形式，然后再通过webView渲染加载。此方案高度计算就稳定的多了。</p>
+<h3 id="方案2"><a href="#方案2" class="headerlink" title="方案2"></a>方案2</h3><p>实现方法是,<strong>webview一屏高，将webview放置在tableView header下面，header透明不接收事件，监听tableview的contentOffset,设置给webview，并同时改变<code>webview.frame.orgin.Y</code>,使得webview一直处于屏幕可视位置</strong>以此来达到滚动webview的目的。此方案可以避免内存暴涨问题，同时也能达到不影响用户体验。但是！这个方案也有弊端，因为我司app接入的第三方内容源五花八门，总有几个会遇到问题，比如这个页面</p>
+<p><img src="/2018/03/07/iOS-TableViewCell内嵌UIWebView/262C4560D4D26FEAA966EF851E2E368B.gif" alt="unload.gif"></p>
+<p>大概只有首屏高度的图片可以load,下面图片全部无法加载。估计代码里控制判断手势滑动来懒加载图片。如果网页内容源稳定，此方案可以适用。</p>
+<h3 id="方案3"><a href="#方案3" class="headerlink" title="方案3"></a>方案3</h3><p>在方案2的基础上改进，让webview也接受手势滑动，这样就可以解决图片懒加载问题。<br>demo中是嵌入tableViewCell中的，具体分3个section,section1为webview上面区域，具体开发中可以用来完成其他奇葩需求，比如新闻小编信息（头像昵称等）。section2为webview区域，用来展示webView,高度和<code>webview.scrollView.contentSize.height</code>相同。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">UITableView</span>     *_listView;</div><div class="line">ICWebView       *_webView;</div></pre></td></tr></table></figure>
+<p>ICWebView继承至UIWebView, 成员变量<code>isTouched</code>标志用户是否触摸过webview</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">_listView = [[<span class="built_in">UITableView</span> alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, statusBarHeight, screenWidth, screenHeight - statusBarHeight)];</div><div class="line">[_listView setDelegate:<span class="keyword">self</span>];</div><div class="line">[_listView setDataSource:<span class="keyword">self</span>];</div><div class="line">[_listView setScrollEnabled:<span class="literal">YES</span>];</div><div class="line">[_listView setBackgroundColor:[<span class="built_in">UIColor</span> whiteColor]];</div><div class="line">[_listView setEstimatedRowHeight:<span class="number">0</span>];   <span class="comment">//解决iOS11后tableview滚动contentOffset异常变化（发现知乎客户端也类似bug没解决）</span></div><div class="line">[_listView setEstimatedSectionFooterHeight:<span class="number">0</span>];</div><div class="line">[_listView setEstimatedSectionHeaderHeight:<span class="number">0</span>];</div><div class="line">[_listView setClipsToBounds:<span class="literal">YES</span>];</div><div class="line">[<span class="keyword">self</span>.view addSubview:_listView];</div><div class="line"></div><div class="line"><span class="built_in">NSString</span> *urlStr = <span class="string">@"https://app.myzaker.com/news/article.php?pk=5a9d632ad1f149b16400000f"</span>;</div><div class="line">_webView = [[ICWebView alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, _webViewToTopHeight, screenWidth, screenHeight)];</div><div class="line">[_webView.scrollView setScrollEnabled:<span class="literal">YES</span>];</div><div class="line">[_webView.scrollView setDecelerationRate:<span class="built_in">UIScrollViewDecelerationRateNormal</span>];</div><div class="line">[_webView.scrollView setShowsVerticalScrollIndicator:<span class="literal">NO</span>];</div><div class="line">[_webView.scrollView setBounces:<span class="literal">NO</span>];</div><div class="line">[_webView loadRequest:[<span class="built_in">NSURLRequest</span> requestWithURL:[<span class="built_in">NSURL</span> URLWithString:urlStr]]];</div><div class="line">[_listView addSubview:_webView];</div></pre></td></tr></table></figure>
+<p>初使化tableView和webview,并将webView add在tableView上。这里注意，需要隐藏webview的verticalScrollIndicator,并且关闭弹性效果。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[_listView           addObserver:<span class="keyword">self</span> forKeyPath:<span class="string">@"contentOffset"</span> options:<span class="built_in">NSKeyValueObservingOptionNew</span> context:kTableChangeKey];</div><div class="line">[_webView.scrollView addObserver:<span class="keyword">self</span> forKeyPath:<span class="string">@"contentSize"</span>   options:<span class="built_in">NSKeyValueObservingOptionNew</span> context:kWebSizeChangeKey];</div></pre></td></tr></table></figure>
+<p>监听tableView的contentOffset变化<br>监听webView.scrollView的内容高度contentSize变化</p>
+<p>在处理监听之前，先需要解决多手势识别问题。UIScrollView默认是关闭的</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">BOOL</span>)gestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)otherGestureRecognizer&#123;</div><div class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个时候问题就比较蛋疼了，修改UIGestureRecognizerDelegate的重写方法子类必须继承UIScrollView,但是，UIWebView继承自UIView,通过继承重写这条方法就被堵死了，必须重新想办法，让UIWebView和UITableView同时识别手势。OC的runtime提供了一个黑魔法method swilling可以被用来交换方法。</p>
+<p>新建一个UIScrollView的category, 重写load类方法，交换gestureRecognizer与myGestureRecognizer方法代码如下</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">+ (<span class="keyword">void</span>)load&#123;</div><div class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> instancesRespondToSelector:<span class="keyword">@selector</span>(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) &#123;</div><div class="line">        method_exchangeImplementations(class_getInstanceMethod(<span class="keyword">self</span>, <span class="keyword">@selector</span>(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)),class_getInstanceMethod(<span class="keyword">self</span>, <span class="keyword">@selector</span>(myGestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)));</div><div class="line">        </div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="built_in">BOOL</span>)myGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)otherGestureRecognizer&#123;</div><div class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span>.superview isKindOfClass:[ICWebView <span class="keyword">class</span>]]) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> [<span class="keyword">self</span> myGestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行代码发现并没有成功，调试后，发现UIScrollView方法表中并未找到<code>gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:</code>方法<br>打印UIScrollView方法表进行查找</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Method *methodsList = class_copyMethodList(objc_getClass(<span class="string">"UIScrollView"</span>), &amp;methodCount);</div><div class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;methodCount; i++) &#123;</div><div class="line">    Method method = methodsList[i];</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"&gt;&gt;&gt;&gt;%@"</span>, <span class="built_in">NSStringFromSelector</span>(method_getName(method)));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>输出结果如下：<img src="/2018/03/07/iOS-TableViewCell内嵌UIWebView/7C884A80BFE951E29F38878F40F2CB0A.png" alt="methodPrint.png"></p>
+<p>我们发现有一个方法<strong>_gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:</strong>只多了一个下划线。我们自己手动给分类添加手势的代理方法</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">BOOL</span>)_gestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)otherGestureRecognizer&#123;</div><div class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>此时method Exchange完成，我们可以通过判断scrollView.superView为ICWebView时，多重手势识别打开。我们可以愉快的同时滑动webView和TableView了</p>
+<p>处理监听</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#pragma mark - KVO Method</span></div><div class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="built_in">NSString</span> *)keyPath ofObject:(<span class="keyword">id</span>)object change:(<span class="built_in">NSDictionary</span> *)change context:(<span class="keyword">void</span> *)context &#123;</div><div class="line">    <span class="built_in">UIScrollView</span> *scrollView = object;</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> (context == kTableChangeKey ) &#123;</div><div class="line">        <span class="built_in">CGFloat</span> contentHeight = _listView.frame.size.height;</div><div class="line">        <span class="keyword">if</span> (scrollView.contentOffset.y &gt;= _webHeight - contentHeight) &#123;     <span class="comment">//tableview offsetY 高于webViewConentHeight （在section2内滑动）</span></div><div class="line">            </div><div class="line">            _webView.scrollView.scrollEnabled = <span class="literal">NO</span>; <span class="comment">//禁止webView滑动</span></div><div class="line">            _webView.isTouched = <span class="literal">NO</span>;                <span class="comment">//重置触摸flag</span></div><div class="line">            [_webView setY:MAX(_webHeight - contentHeight, _webViewToTopHeight)];   <span class="comment">//改变webview.Y让其使终处于屏幕中</span></div><div class="line">            </div><div class="line">            <span class="comment">//将webview底部紧贴section1底部</span></div><div class="line">            <span class="keyword">if</span> (_webView.scrollView.contentOffset.y != _webView.scrollView.contentSize.height - _webView.frame.size.height) &#123;</div><div class="line">                [_webView.scrollView setContentOffset:<span class="built_in">CGPointMake</span>(<span class="number">0</span>, _webView.scrollView.contentSize.height - _webView.frame.size.height) animated:<span class="literal">NO</span>];</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (scrollView.contentOffset.y  &lt; _webViewToTopHeight)&#123;      <span class="comment">//tableview offsetY 在 section 0 和 webview之间</span></div><div class="line">            _webView.isTouched = <span class="literal">NO</span>;                    <span class="comment">//重置触摸flag</span></div><div class="line">            _webView.scrollView.scrollEnabled = <span class="literal">NO</span>; <span class="comment">//禁止webView滑动</span></div><div class="line"></div><div class="line">            <span class="keyword">if</span> (_webView.y != _webViewToTopHeight) &#123;</div><div class="line">                [_webView setY:_webViewToTopHeight];    <span class="comment">//section0还在可视范围内，设置webview与section1顶部对齐</span></div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (_webView.scrollView.contentOffset.y != <span class="number">0</span>) &#123;</div><div class="line">                [_webView.scrollView setContentOffset:<span class="built_in">CGPointMake</span>(<span class="number">0</span>, <span class="number">0</span>)]; <span class="comment">//设置内容处于顶部</span></div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            _webView.scrollView.scrollEnabled = _isNeedSimuTouch; <span class="comment">//是否需要webview接受滑动手势</span></div><div class="line">            [_webView setY:scrollView.contentOffset.y];</div><div class="line">            <span class="keyword">if</span> (!_webView.isTouched || !_isNeedSimuTouch) &#123;     <span class="comment">//如果没有触摸，将tableview惯性滚动offset赋给webview</span></div><div class="line">                [_webView.scrollView setContentOffset:<span class="built_in">CGPointMake</span>(<span class="number">0</span>, scrollView.contentOffset.y - _webViewToTopHeight)];</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (context == kWebSizeChangeKey) &#123;</div><div class="line">        <span class="keyword">if</span> (_webHeight != scrollView.contentSize.height) &#123;</div><div class="line">            _webHeight = scrollView.contentSize.height;</div><div class="line">            [_listView reloadRowsAtIndexPaths:@[[<span class="built_in">NSIndexPath</span> indexPathForRow:<span class="number">0</span> inSection:<span class="number">1</span>]] withRowAnimation:<span class="built_in">UITableViewRowAnimationNone</span>]; <span class="comment">//contentSize变化，将cell高度刷新</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (_listView.contentOffset.y &gt;= _webHeight  - <span class="number">50</span>) &#123; <span class="comment">//在section2内滑动，webview肯定是处于滚到最底部的，如果contentSize发生变化，需要将webView手动滚到底部。</span></div><div class="line">            [_webView.scrollView setContentOffset:<span class="built_in">CGPointMake</span>(<span class="number">0</span>, _webView.scrollView.contentSize.height - _webView.frame.size.height)];</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>说明几个优化点，当tableView的section2可视时，此时webView必定已经滚到底部，此时可以将webView滚动禁用掉，当isTouched时(滚到section1并且触摸)，重新打开手势接收，当webview在section2内滑动，webview处于最底部的，如果contentSize发生变化，需要将webView手动滚到底部。</p>
+<p>到此方案实现，我们可以解决掉图片不加载的问题<br><img src="/2018/03/07/iOS-TableViewCell内嵌UIWebView/0264368B2A41846B85C6E5FFBDBE0CB4.gif" alt="图片加载.gif"></p>
+<p>水平很菜,如果有错误，还请指出，<a href="https://github.com/iceB/iOS-InsertWebView" target="_blank" rel="external">demo地址</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/03/07/iOS-TableViewCell内嵌UIWebView/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
     <article id="post-Reveal工具的使用" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -173,7 +247,7 @@
 <p>找到需要监控的墨迹天气，和重庆万年历添加至plist</p>
 <p>tips:找不到bundleId时可以使用助手下载ipa包，解压后在plist里面查找</p>
 <p>6.将plist上传至/Library/MobileSubstrate/DynamicLibraries</p>
-<p>使用scp指令： scp libReveal.plist <a href="&#109;&#97;&#x69;&#108;&#116;&#111;&#x3a;&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#57;&#50;&#46;&#49;&#56;&#54;&#x2e;&#51;&#46;&#55;&#x32;">&#x72;&#x6f;&#x6f;&#x74;&#64;&#49;&#57;&#50;&#46;&#49;&#56;&#54;&#x2e;&#51;&#46;&#55;&#x32;</a>:/Library/MobileSubstrate/DynamicLibraries</p>
+<p>使用scp指令： scp libReveal.plist <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#114;&#111;&#111;&#116;&#x40;&#49;&#57;&#50;&#x2e;&#x31;&#x38;&#x36;&#46;&#51;&#x2e;&#55;&#x32;">&#114;&#111;&#111;&#116;&#x40;&#49;&#57;&#50;&#x2e;&#x31;&#x38;&#x36;&#46;&#51;&#x2e;&#55;&#x32;</a>:/Library/MobileSubstrate/DynamicLibraries</p>
 <p>7.将/RevealServer.framework/RevealServer二进制文件 添加至 /Library/MobileSubstrate/DynamicLibraries 并重命名为为libReveal.dylib 指令如下</p>
 <p>scp /Users/xiaomu/Downloads/Reveal.app/Contents/SharedSupport/iOS-Libraries/RevealServer.framework/RevealServer root@192.168.3.72:/Library/MobileSubstrate/DynamicLibraries/libReveal.dylib</p>
 <p>/Library/MobileSubstrate/DynamicLibraries目录结构如下</p>
@@ -197,41 +271,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2018/03/07/Reveal工具的使用/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-
-
-
-
-
-
-
-  
-    <article id="post-markDown" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="三月"><a href="#三月" class="headerlink" title="三月"></a>三月</h2>
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/03/02/markDown/">展开全文 >></a>
         </p>
       
 
