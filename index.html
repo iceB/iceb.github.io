@@ -170,7 +170,7 @@
 <p>监听tableView的contentOffset变化<br>监听webView.scrollView的内容高度contentSize变化</p>
 <p>在处理监听之前，先需要解决多手势识别问题。UIScrollView默认是关闭的</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">- (<span class="built_in">BOOL</span>)gestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)otherGestureRecognizer&#123;</div><div class="line">    <span class="keyword">return</span> <span class="literal">NO</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这个时候问题就比较蛋疼了，修改UIGestureRecognizerDelegate的重写方法子类必须继承UIScrollView,但是，UIWebView继承自UIView,通过继承重写这条方法就被堵死了，必须重新想办法，让UIWebView和UITableView同时识别手势。OC的runtime提供了一个黑魔法method swilling可以被用来交换方法。</p>
+<p>这个时候问题就比较蛋疼了，修改UIGestureRecognizerDelegate的重写方法子类必须继承UIScrollView,但是，UIWebView继承自UIView,通过继承重写这条方法就被堵死了，必须重新想办法，让UIWebView和UITableView同时识别手势。OC的runtime提供了一个黑魔法method swizzling可以被用来交换方法。</p>
 <p>新建一个UIScrollView的category, 重写load类方法，交换gestureRecognizer与myGestureRecognizer方法代码如下</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">+ (<span class="keyword">void</span>)load&#123;</div><div class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> instancesRespondToSelector:<span class="keyword">@selector</span>(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) &#123;</div><div class="line">        method_exchangeImplementations(class_getInstanceMethod(<span class="keyword">self</span>, <span class="keyword">@selector</span>(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)),class_getInstanceMethod(<span class="keyword">self</span>, <span class="keyword">@selector</span>(myGestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)));</div><div class="line">        </div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="built_in">BOOL</span>)myGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(<span class="built_in">UIGestureRecognizer</span> *)otherGestureRecognizer&#123;</div><div class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span>.superview isKindOfClass:[ICWebView <span class="keyword">class</span>]]) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> [<span class="keyword">self</span> myGestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>运行代码发现并没有成功，调试后，发现UIScrollView方法表中并未找到<code>gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:</code>方法<br>打印UIScrollView方法表进行查找</p>
@@ -247,7 +247,7 @@
 <p>找到需要监控的墨迹天气，和重庆万年历添加至plist</p>
 <p>tips:找不到bundleId时可以使用助手下载ipa包，解压后在plist里面查找</p>
 <p>6.将plist上传至/Library/MobileSubstrate/DynamicLibraries</p>
-<p>使用scp指令： scp libReveal.plist <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#114;&#111;&#111;&#116;&#x40;&#49;&#57;&#50;&#x2e;&#x31;&#x38;&#x36;&#46;&#51;&#x2e;&#55;&#x32;">&#114;&#111;&#111;&#116;&#x40;&#49;&#57;&#50;&#x2e;&#x31;&#x38;&#x36;&#46;&#51;&#x2e;&#55;&#x32;</a>:/Library/MobileSubstrate/DynamicLibraries</p>
+<p>使用scp指令： scp libReveal.plist <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#x72;&#111;&#111;&#116;&#x40;&#x31;&#57;&#50;&#x2e;&#49;&#56;&#54;&#x2e;&#51;&#46;&#x37;&#x32;">&#x72;&#111;&#111;&#116;&#x40;&#x31;&#57;&#50;&#x2e;&#49;&#56;&#54;&#x2e;&#51;&#46;&#x37;&#x32;</a>:/Library/MobileSubstrate/DynamicLibraries</p>
 <p>7.将/RevealServer.framework/RevealServer二进制文件 添加至 /Library/MobileSubstrate/DynamicLibraries 并重命名为为libReveal.dylib 指令如下</p>
 <p>scp /Users/xiaomu/Downloads/Reveal.app/Contents/SharedSupport/iOS-Libraries/RevealServer.framework/RevealServer root@192.168.3.72:/Library/MobileSubstrate/DynamicLibraries/libReveal.dylib</p>
 <p>/Library/MobileSubstrate/DynamicLibraries目录结构如下</p>
@@ -271,6 +271,91 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2018/03/07/Reveal工具的使用/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+
+
+
+
+
+
+
+  
+    <article id="post-Category笔记" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="Category笔记"><a href="#Category笔记" class="headerlink" title="Category笔记"></a>Category笔记</h1><p>从上篇用到method swizzling说起，交换UIScrollVIew的gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:时有一个疑问</p>
+<p>我们往分类里面添加方法，主类的子类重写后，会调用顺序会是什么样的。下面我们做些测试</p>
+<h2 id="1-category重写主类中存在的方法"><a href="#1-category重写主类中存在的方法" class="headerlink" title="1.category重写主类中存在的方法"></a>1.category重写主类中存在的方法</h2><p>新建一个类，ClassSuper,一个Category ClassSuper+Extend</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"ClassSuper.h"</span></span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span></span></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="meta">#import <span class="meta-string">"ClassSuper+Extend.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span> (<span class="title">Extend</span>)</span></div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1 Category"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>重写主类已经实现的方法，Xcode会报警告 Category is implementing a method which will also be implemented by its primary class 意思是<strong>Category实现了主类已经实现的方法</strong>。给出警告的意思明显就是Category的方法会覆盖掉主类的方法。测试一下</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> - (<span class="keyword">void</span>)viewDidLoad &#123;</div><div class="line">    [<span class="keyword">super</span> viewDidLoad];</div><div class="line">    </div><div class="line">    ClassSuper *classSup = [[ClassSuper alloc] init];</div><div class="line">    [classSup method1];</div><div class="line">    </div><div class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> methodCount, i;</div><div class="line">    Method *methodsList = class_copyMethodList(objc_getClass(<span class="string">"ClassSuper"</span>), &amp;methodCount);</div><div class="line">    <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;methodCount; i++) &#123;</div><div class="line">        Method method = methodsList[i];</div><div class="line">        <span class="built_in">NSLog</span>(<span class="string">@"&gt;&gt;&gt;&gt;%@"</span>, <span class="built_in">NSStringFromSelector</span>(method_getName(method)));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行结果1</p>
+<p><strong>2017-11-11 20:32:16.490627+0800 TestMethod[6357:397871] method1 category</strong></p>
+<p><strong>2017-11-11 20:32:16.490819+0800 TestMethod[6357:397871] >>>>method1</strong></p>
+<p><strong>2017-11-11 20:32:16.490919+0800 TestMethod[6357:397871] >>>>method1</strong></p>
+<p>可以看出，调用实际上是调用了Category实现的方法，打印方法列表,存在两个方法，结论，<strong>Category实现主类已经实现的方法，先调用分类方法。 不会覆盖主类方法，方法列表中存在两个相同的SEL</strong></p>
+<h2 id="2-子类中重写category的方法"><a href="#2-子类中重写category的方法" class="headerlink" title="2.子类中重写category的方法"></a>2.子类中重写category的方法</h2><p>向分类里面添加mehtod2,新建子类，ClassSub,重写method2。在viewDidLoad中实例化并调用</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"ClassSub.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSub</span></span></div><div class="line">- (<span class="keyword">void</span>)method2&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method2  subClass"</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="meta">#import <span class="meta-string">"ClassSuper+Extend.h"</span></span></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span> (<span class="title">Extend</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1 Category"</span>);</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)method2&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method2 add from Category"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>子类调用method2结果</p>
+<p><strong>2017-11-11 20:44:12.759368+0800 TestMethod[7276:417870] method2 subClass</strong></p>
+<p><strong>2017-11-11 20:44:12.759486+0800 TestMethod[7276:417870] >>>>method1</strong></p>
+<p><strong>2017-11-11 20:44:12.759548+0800 TestMethod[7276:417870] >>>>method1</strong></p>
+<p><strong>2017-11-11 20:44:12.759627+0800 TestMethod[7276:417870] >>>>method2</strong></p>
+<p>可看出，子类重写Category中的方法，调用的是子类所重写的方法。所以<strong>分类方法可以被子类重写并优先调用。</strong></p>
+<h2 id="3-多个子类重写主类的方法"><a href="#3-多个子类重写主类的方法" class="headerlink" title="3.多个子类重写主类的方法"></a>3.多个子类重写主类的方法</h2><p>再次添加一个Category，重写主类method1方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#import <span class="meta-string">"ClassSuper+Extend2.h"</span></span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span> (<span class="title">Extend2</span>)</span></div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1 Category2"</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p>输出</p>
+<p><strong>2017-11-11 21:05:42.597004+0800 TestMethod[8335:453809] method1 Category2</strong></p>
+<p><strong>2017-11-11 21:05:42.597182+0800 TestMethod[8335:453809] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:05:42.597286+0800 TestMethod[8335:453809] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:05:42.597403+0800 TestMethod[8335:453809] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:05:42.597505+0800 TestMethod[8335:453809] >>>>method2</strong></p>
+<p>可以看出，主类方法列表中存在三个method1方法，说明多个Category重写一个方法全部都可以添加，但调用时，两个分类谁的方法先被调用？</p>
+<p>先来看下类是如何被加载的。程序启动时，所有类的方法和属性都会被加载到runtime，加载顺序由编译顺序决定，打开项目编译文件列表</p>
+<p><img src="/2017/11/11/Category笔记/FA4289129A34BC3FBA03FE497568C985.png" alt="WX20180311-213248@2x.png"></p>
+<p>可以看出，extend2方法是后被添加到runtime的。</p>
+<p>重写load方法，看下加载顺序</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span> (<span class="title">Extend2</span>)</span></div><div class="line">+ (<span class="keyword">void</span>)load &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Category Extend2"</span>);</div><div class="line">    </div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1 Category2"</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ClassSuper</span> (<span class="title">Extend</span>)</span></div><div class="line">+ (<span class="keyword">void</span>)load &#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"Category Extend"</span>);</div><div class="line">&#125;</div><div class="line">- (<span class="keyword">void</span>)method1&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method1 Category"</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line">- (<span class="keyword">void</span>)method2&#123;</div><div class="line">    <span class="built_in">NSLog</span>(<span class="string">@"method2 add from Category"</span>);</div><div class="line">&#125;</div><div class="line"><span class="keyword">@end</span></div></pre></td></tr></table></figure>
+<p><strong>2017-11-11 21:39:19.747117+0800 TestMethod[8564:521002] Category Extend</strong></p>
+<p><strong>2017-11-11 21:39:19.747592+0800 TestMethod[8564:521002] Category Extend2</strong></p>
+<p><strong>2017-11-11 21:39:19.842245+0800 TestMethod[8564:521002] method1 Category2</strong></p>
+<p><strong>2017-11-11 21:39:19.842426+0800 TestMethod[8564:521002] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:39:19.842552+0800 TestMethod[8564:521002] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:39:19.842691+0800 TestMethod[8564:521002] >>>>method2</strong></p>
+<p><strong>2017-11-11 21:39:19.842826+0800 TestMethod[8564:521002] >>>>method1</strong></p>
+<p>调换编译顺序，将ClassSuper+Extend拖至最后，编译运行</p>
+<p><img src="/2017/11/11/Category笔记/4097F71CB69CD6C4B0D25D7CD4070948.png" alt="WX20171111-214444@2x.png"></p>
+<p><strong>2017-11-11 21:46:42.541100+0800 TestMethod[8745:530999] Category Extend2</strong></p>
+<p><strong>2017-11-11 21:46:42.541564+0800 TestMethod[8745:530999] Category Extend</strong></p>
+<p><strong>2017-11-11 21:46:42.631335+0800 TestMethod[8745:530999] method1 Category</strong></p>
+<p><strong>2017-11-11 21:46:42.631443+0800 TestMethod[8745:530999] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:46:42.631555+0800 TestMethod[8745:530999] >>>>method2</strong></p>
+<p><strong>2017-11-11 21:46:42.631655+0800 TestMethod[8745:530999] >>>>method1</strong></p>
+<p><strong>2017-11-11 21:46:42.631760+0800 TestMethod[8745:530999] >>>>method1</strong></p>
+<p>从log来看，调用顺序也调换了。所以可以得出以下结论:<br><strong>类的加载顺序，先加载主类，后加载分类，最后加载子类。objc_msgSend来发送消息传递，优先子类，后分类，最后是主类。如果存在多个分类重写(添加)同一方法，则根据buildPhases->Compile Sources里面的从上至下顺序编译的，编译时通过压栈的方式将多个分类压栈，根据后进先出的原则，后编译的会被先调用，与创建时间先后无关，当objc_msgSend找到方法并调用之后，就不再继续传递消息。</strong></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/11/11/Category笔记/">展开全文 >></a>
         </p>
       
 
